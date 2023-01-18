@@ -1,9 +1,20 @@
-all:
-	@echo Build all
+all: report.html
 
 clean:
-	@echo Clean all
+	rm -f words.txt histogram.tsv histogram.png report.md report.html
+
+report.html: report.rmd histogram.tsv histogram.png
+	Rscript -e 'rmarkdown::render("$<")'
+
+histogram.png: histogram.tsv
+	Rscript -e '.libPaths(c("C:/Program Files/R/R-4.2.2/library", "D:/Users/teodo/Documents/R/win-library")); library(ggplot2); qplot(Length, Freq, data=read.delim("$<")); ggsave("$@")'
+	rm Rplots.pdf
+
+histogram.tsv: histogram.r words.txt
+	Rscript $<
+
+# words.txt: /usr/share/dict/words
+# 	cp $< $@
 
 words.txt:
-    	Rscript -e 'download.file("https://svnweb.freebsd.org/base/head/share/dict/web2?view=co", destfile = "words.txt", quiet = TRUE)'
-    
+	Rscript -e 'download.file("http://svnweb.freebsd.org/base/head/share/dict/web2?view=co", destfile = "words.txt", quiet = TRUE)'
